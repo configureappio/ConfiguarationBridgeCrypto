@@ -1,0 +1,12 @@
+﻿@using  ConfigurationBridge.Configuration.Core;
+@model IAppSettingsResolved
+
+@{
+    ViewData["Title"] = "Contact";
+}
+<h2>@ViewData["Title"]</h2>
+<h3>@ViewData["Message"]</h3>
+
+<p>Application Name : @Model.ApplicationName</p>
+<p>Sql Connection String: @Model.SqlConnectionSting</p>
+<p>Oracle Connection String : @Model.OracleConnectionSting</p>

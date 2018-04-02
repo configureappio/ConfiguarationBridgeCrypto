@@ -1,0 +1,114 @@
+﻿<Window x:Class="Encryptor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModel="clr-namespace:Encryptor.ViewModel"
+        mc:Ignorable="d"
+        Title="Secrets Encryptor" Height="450" Width="800"   
+        DataContext="{Binding MainViewModel, Source={StaticResource Locator}}"
+        >
+    <DockPanel LastChildFill="True"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <DockPanel.Resources>
+            <viewModel:BindingProxy x:Key="TargetProxy" Data="{Binding Path=DataContext.DataValues, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"></viewModel:BindingProxy>
+        </DockPanel.Resources>
+        <Grid Margin="10" DockPanel.Dock="Top"  HorizontalAlignment="Stretch" VerticalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" VerticalAlignment="Center">Algorithm</Label>
+            <TextBlock Foreground="Transparent" Background="Transparent" Margin="5,0,30,0" Grid.Column="1" Text="{Binding Path=LongestSymetricAlgorithmName}"></TextBlock>
+            <ComboBox Margin="5,0,5,0" Grid.Column="1" VerticalAlignment="Center" ItemsSource="{Binding Path=SymetricAlgorithms}" SelectedValuePath="Value" DisplayMemberPath="Key" SelectedValue="{Binding Path=SelectedAlgorithm, Mode=TwoWay}"/>
+            <Label Grid.Column="2" VerticalAlignment="Center">Password:</Label>
+            <TextBox Margin="5,0,5,0"  Grid.Column="3" VerticalAlignment="Center" Text="{Binding Path=Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged }" ></TextBox>
+            <Label Grid.Column="4" VerticalAlignment="Center">Salt:</Label>
+            <TextBox Margin="5,0,5,0" Grid.Column="5" VerticalAlignment="Center" Text="{Binding Path=Salt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ></TextBox>
+            
+        </Grid>
+        
+        <Grid Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+
+            <GridSplitter Background="Black" Grid.Column="1" Width="1" ResizeBehavior="PreviousAndNext"></GridSplitter>
+            <DockPanel Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" LastChildFill="True" Margin="0,0,5,0">
+                <Grid DockPanel.Dock="Bottom" HorizontalAlignment="Left">
+                    <Button Margin="0,10,0,10" Command='{Binding AddNewCommand}'>Add New</Button>
+                </Grid>
+                <DataGrid x:Name="ValueGrid"
+                      DataContext="{Binding Path=DataValues}"
+                      ItemsSource="{Binding }" 
+                      CanUserReorderColumns="True" 
+                      CanUserResizeColumns="True" 
+                      CanUserResizeRows="False" 
+                      CanUserSortColumns="True" 
+                      AutoGenerateColumns="False"
+                      HorizontalAlignment="Stretch" 
+                      VerticalAlignment="Stretch"                       
+                >
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="Plain Text Key"  MinWidth="150" IsReadOnly="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBox >
+                                        <TextBox.Text>
+                                            <Binding Path="RawKey" Mode="TwoWay" UpdateSourceTrigger="LostFocus" >
+                                                <Binding.ValidationRules>
+                                                    <viewModel:DictionaryKeyValidationRule>
+                                                        <viewModel:DictionaryKeyValidationRule.ExistingValuesWrapper>
+                                                            <viewModel:DictionaryKeyValidationRuleBindingWrapper                                                                     
+                                                                    ExistingValues="{Binding Data, Source={StaticResource TargetProxy}}">
+                                                            </viewModel:DictionaryKeyValidationRuleBindingWrapper>
+                                                        </viewModel:DictionaryKeyValidationRule.ExistingValuesWrapper>
+                                                    </viewModel:DictionaryKeyValidationRule>
+                                                </Binding.ValidationRules>
+                                            </Binding>
+                                        </TextBox.Text>
+                                    </TextBox>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Plain Text Value" MinWidth="150" IsReadOnly="False" CanUserResize="False" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding RawValue, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" ></TextBox>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+
+            <DockPanel Grid.Column="2"  VerticalAlignment="Stretch" HorizontalAlignment="Stretch" LastChildFill="True" Margin="5,0,0,0">
+                
+                <Grid DockPanel.Dock="Bottom" HorizontalAlignment="Left" Margin="0,10,0,10">
+                        <Button Command='{Binding CopyToClipboardCommand}'>Copy JSON to Clipboard</Button>
+                    </Grid>
+                    <Border BorderBrush="#FF688CAF" BorderThickness="1" >
+                <Grid DockPanel.Dock="top" HorizontalAlignment="Stretch">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <DataGridColumnHeader Grid.Row="0">Encrypted JSON</DataGridColumnHeader>
+                        <DataGridCell Grid.Row="1" Background="#FFF0F0F0" >
+                            <TextBox Margin="10" IsReadOnly="True" TextWrapping="WrapWithOverflow" Background="Transparent" BorderThickness="0" Text="{Binding Path=JsonDictionary, Mode=OneWay}"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></TextBox>
+                    </DataGridCell>                        
+                </Grid>
+                    </Border>
+            </DockPanel>
+            
+        </Grid>
+    </DockPanel>
+</Window>
