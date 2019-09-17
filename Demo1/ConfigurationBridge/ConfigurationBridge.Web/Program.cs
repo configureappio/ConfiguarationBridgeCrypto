@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
@@ -7,21 +8,27 @@ namespace ConfigurationBridge.Web
 {
     public class Program
     {
+        [ExcludeFromCodeCoverage]
         public static void Main(string[] args)
         {
-            BuildWebHost(args).Run();
+            BuildWebHost(CreateWebHostBuilder(args)).Run();
         }
 
-        public static IWebHost BuildWebHost(string[] args)
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+                .UseStartup<Startup>()
+                .ConfigureAppConfiguration(AddCustomConfiguration);
+
+        private static IWebHost BuildWebHost(IWebHostBuilder builder) => builder.Build();
+
+        private static void AddCustomConfiguration(WebHostBuilderContext ctx, IConfigurationBuilder builder)
         {
-            var webhost = WebHost.CreateDefaultBuilder(args);
-
-            // In the real world you could use this to map to a file outside of source control
-            webhost.ConfigureAppConfiguration(c => { c.AddJsonFile(new PhysicalFileProvider(@"C:\"), @"mysecrets.json", true, true); });
-
-            return webhost.UseStartup<Startup>().Build();
+            builder.AddJsonFile(
+                new PhysicalFileProvider(
+                    @"C:\"),
+                    @"secrets.json",
+                    true,
+                    true);
         }
-
-        
     }
 }

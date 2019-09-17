@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Security.Cryptography;
 using ConfigurationBridge.Configuration.Crypto;
+using ConfigurationBridge.Web.Configuration;
 
 namespace ConfigurationBridge.Web
 {
@@ -20,17 +21,21 @@ namespace ConfigurationBridge.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
-            services.AddOptions();            
+            services.AddMvc();            
             services.Configure<MyAppSettings>(Configuration.GetSection("MyAppSettings"));
-            services.AddSingleton(Configuration);        
+            services.AddSingleton(Configuration);
+
 
             // In a real implementation, you would have a factory here to get the password and salt securely
             // from somewhere such as Azure Key Vault, Environmental variable / another json setting (obfuscated in some way)
-            services.AddSingleton( x => new CryptoFactory().Create<AesManaged>("Password", "Salt"));
+            var salt = Configuration["CryptoSalt"];
+            var pwd = Configuration["CryptoPwd"];
+
+            services.AddSingleton( x => new CryptoFactory().Create<AesManaged>(pwd, salt));
             services.AddSingleton<ISettingsDecrypt, SettingsDecryptor>();
             services.AddSingleton<ISettingsValidator, SettingsValidator>();
             services.AddScoped<IAppSettingsResolved, MyAppSettingsBridge>();
+            
             // add the other interfaces implemented by MyAppSettingsBridge to allow for resolution by those interfaces (interface segregation)
             services.AddScoped<IAppSettings>(provider => provider.GetService<IAppSettingsResolved>());
             services.AddScoped<ISqlConnectionSettings>(provider => provider.GetService<IAppSettingsResolved>());
@@ -41,7 +46,6 @@ namespace ConfigurationBridge.Web
         {                        
             if (env.IsDevelopment())
             {
-                app.UseBrowserLink();
                 app.UseDeveloperExceptionPage();
             }
             else

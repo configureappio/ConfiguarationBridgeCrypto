@@ -5,24 +5,33 @@ using ConfigurationBridge.Configuration.Crypto;
 
 namespace ConfigurationBridge.Configuration.Intermediaries
 {
-    public class SettingsDecryptor : ISettingsDecrypt
+    public abstract class SettingsDecryptorBase : ISettingsDecrypt
     {
         private readonly ICryptoAlgorithm _crypto;
-        public SettingsDecryptor(ICryptoAlgorithm crypto)
+
+        protected SettingsDecryptorBase(ICryptoAlgorithm crypto)
         {
             _crypto = crypto ?? throw new ArgumentNullException(nameof(crypto));
         }
 
         public string Decrypt(string key, IDictionary<string, string> keyValues)
         {
-            var hashedKey = _crypto.HashKey(key);
+            var hashedKey = IsEncryptedKey(key) ? _crypto.HashKey(key) : key;
+
+            if (!keyValues.ContainsKey(hashedKey)) throw new KeyNotFoundException();
+
             var value = keyValues[hashedKey];
-            return DecryptValue(value);
+            return IsEncryptedValue(value) ? DecryptValue(value) : value;
+
         }
 
         private string DecryptValue(string encodedString)
         {
             return _crypto.Decrypt(encodedString);                        
         }
+
+        protected abstract bool IsEncryptedKey(string key);
+
+        protected abstract bool IsEncryptedValue(string value);
     }
 }
