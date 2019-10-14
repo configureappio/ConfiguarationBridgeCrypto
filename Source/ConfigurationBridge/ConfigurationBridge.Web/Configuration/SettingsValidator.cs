@@ -16,13 +16,13 @@ namespace ConfigurationBridge.Web.Configuration
         }
         public bool TryValidate(IAppSettingsStructure settings, out AggregateException validationExceptions)
         {
-            if (settings == null) throw new ArgumentNullException(nameof(settings));
+            if (settings is null) throw new ArgumentNullException(nameof(settings));
             
             var exceptions = new List<Exception>();
 
-            if (settings.ApplicationName == null) exceptions.Add(new ArgumentNullException(nameof(settings.ApplicationName)));
+            if (settings.ApplicationName is null) exceptions.Add(new ArgumentNullException(nameof(settings.ApplicationName)));
             if (string.IsNullOrWhiteSpace(settings.ApplicationName)) exceptions.Add(new ArgumentOutOfRangeException(nameof(settings.ApplicationName)));
-            if (settings.Secrets == null) exceptions.Add(new ArgumentNullException(nameof(settings.ApplicationName)));            
+            if (settings.Secrets is null) exceptions.Add(new ArgumentNullException(nameof(settings.ApplicationName)));            
             validationExceptions = new AggregateException(exceptions);
 
             _logger?.Log(LogLevel.Error, validationExceptions, $"The {nameof(settings)} failed validation. See aggregated exception for details.");

@@ -16,13 +16,16 @@ namespace ConfigurationBridge.Configuration.Intermediaries
 
         public string Decrypt(string key, IDictionary<string, string> keyValues)
         {
-            var hashedKey = IsEncryptedKey(key) ? _crypto.HashKey(key) : key;
+            foreach (var lookupKey in new[] {key, _crypto.HashKey(key)})
+            {
+                if (keyValues.ContainsKey(lookupKey))
+                {
+                    var value = keyValues[lookupKey];
+                    return IsEncryptedValue(value) ? DecryptValue(value) : value;
+                }
+            }
 
-            if (!keyValues.ContainsKey(hashedKey)) throw new KeyNotFoundException();
-
-            var value = keyValues[hashedKey];
-            return IsEncryptedValue(value) ? DecryptValue(value) : value;
-
+            throw new KeyNotFoundException();
         }
 
         private string DecryptValue(string encodedString)
@@ -30,8 +33,7 @@ namespace ConfigurationBridge.Configuration.Intermediaries
             return _crypto.Decrypt(encodedString);                        
         }
 
-        protected abstract bool IsEncryptedKey(string key);
-
+        
         protected abstract bool IsEncryptedValue(string value);
     }
 }

@@ -9,14 +9,6 @@ namespace ConfigurationBridge.Web.Configuration
         {
         }
 
-        protected override bool IsEncryptedKey(string key)
-        {
-            return !key.StartsWith(".");
-        }
-
-        protected override bool IsEncryptedValue(string value)
-        {
-            return !value.StartsWith(".");
-        }
+        protected override bool IsEncryptedValue(string value) => !value.StartsWith(".");
     }
 }

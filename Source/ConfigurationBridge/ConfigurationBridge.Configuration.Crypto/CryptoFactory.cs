@@ -33,11 +33,10 @@ namespace ConfigurationBridge.Configuration.Crypto
 
             public CryptoAlgorithm(string password, string salt, SymmetricAlgorithm algorithm)
             {
-                if (password == null ) throw new ArgumentNullException(nameof(password));
-                if (salt == null) throw new ArgumentNullException(nameof(salt));
-
+                if (password is null ) throw new ArgumentNullException(nameof(password));
+                if (salt is null) throw new ArgumentNullException(nameof(salt));
+                
                 DeriveBytes rgb = new Rfc2898DeriveBytes(password, Encoding.Unicode.GetBytes(salt));
-
                 var rgbKey = rgb.GetBytes(algorithm.KeySize >> 3);
                 var rgbIv = rgb.GetBytes(algorithm.BlockSize >> 3);
                 _encryptor = algorithm.CreateEncryptor(rgbKey, rgbIv);

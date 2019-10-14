@@ -139,7 +139,7 @@ namespace Encryptor.ViewModel
         {
             get
             {
-                if (selectedAlgorithmType == null)
+                if (selectedAlgorithmType is null)
                 {
                     SelectedAlgorithm = SymetricAlgorithms.First( sa => sa.Value.Equals(typeof(AesManaged))).Value;
                 }
